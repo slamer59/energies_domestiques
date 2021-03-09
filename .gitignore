@@ -70,5 +70,5 @@ target/
 # Mypy cache
 .mypy_cache/
 
-srv
+srv/docker/grafana/data
 Solarman

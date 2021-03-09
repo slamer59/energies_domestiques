@@ -1,0 +1,15 @@
+apiVersion: 1
+# https://blog.56k.cloud/provisioning-grafana-datasources-and-dashboards-automagically/
+# https://grafana.com/docs/grafana/latest/datasources/influxdb/
+datasources:
+  - name: InfluxDB_v2_Flux
+    type: influxdb
+    access: proxy
+    url: $INFLUXDB_URL
+    secureJsonData:
+      token: $DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+    jsonData:
+      version: Flux
+      organization: $DOCKER_INFLUXDB_INIT_ORG
+      defaultBucket: $DOCKER_INFLUXDB_INIT_BUCKET
+      tlsSkipVerify: false
