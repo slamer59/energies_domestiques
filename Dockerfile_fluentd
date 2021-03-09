@@ -1,0 +1,11 @@
+
+FROM fluent/fluentd:latest
+MAINTAINER tpedot
+RUN gem install fluent-plugin-elasticsearch
+RUN gem install fluent-plugin-mqtt-io
+RUN gem install fluent-plugin-derive
+RUN gem install fluent-plugin-influxdb
+ENV PATH /home/ubuntu/ruby/bin:$PATH
+EXPOSE 24284
+CMD fluentd -c /fluentd/etc/$FLUENTD_CONF -p /fluentd/plugins $FLUENTD_OPT
+# CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf", "-p", "/fluentd/plugins"]
