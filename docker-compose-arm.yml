@@ -1,0 +1,51 @@
+version: "3.7"
+
+# Based on https://github.com/nicolargo/docker-influxdb-grafana
+# https://github.com/Coac/fluentd-influxdb-grafana
+services:
+  # Documentation environment  https://hub.docker.com/_/influxdb           
+  influxdb:
+    image: arm32v7/influxdb
+    container_name: influxdb
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    env_file:
+      - 'env.influxdb'
+    volumes:
+      # Data persistency
+      # sudo mkdir -p /srv/docker/influxdb/data
+      - ./srv/docker/influxdb/data:/var/lib/influxdb
+    # networks:
+    #   - fluent
+
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    # networks:
+    #   - fluent
+    env_file:
+      - 'env.telegraf'
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    env_file:
+      - 'env.grafana'
+    user: "0"
+    # networks:
+    #   - fluent
+    volumes:
+      # Data persistency
+      # sudo mkdir -p /srv/docker/grafana/data; chown 472:472 /srv/docker/grafana/data
+      - ./srv/docker/grafana/data:/var/lib/grafana
+      - ./srv/docker/grafana/provisioning/:/etc/grafana/provisioning/
+
+networks:
+  fluent:
+    driver: bridge

@@ -49,7 +49,7 @@ services:
 
   # Documentation environment  https://hub.docker.com/_/influxdb           
   influxdb:
-    image: influxdb:latest
+    image: arm32v7/influxdb:latest
     container_name: influxdb
     ports:
       - "8083:8083"
@@ -61,11 +61,25 @@ services:
       # Data persistency
       # sudo mkdir -p /srv/docker/influxdb/data
       - ./srv/docker/influxdb/data:/var/lib/influxdb
+      - ./influxdb.conf:/etc/influxdb/influxdb.conf:ro
+    restart: always
     # networks:
     #   - fluent
 
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - '8888:8888'
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - "influxdb"
+    env_file:
+      - 'env.chronograf'
+    restart: always
+
   telegraf:
-    image: telegraf:latest
+    image: arm32v7/telegraf:latest
     container_name: telegraf
     # networks:
     #   - fluent
@@ -73,6 +87,9 @@ services:
       - 'env.telegraf'
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - "influxdb"
+    restart: always
 
   grafana:
     image: grafana/grafana:latest
@@ -89,7 +106,15 @@ services:
       # sudo mkdir -p /srv/docker/grafana/data; chown 472:472 /srv/docker/grafana/data
       - ./srv/docker/grafana/data:/var/lib/grafana
       - ./srv/docker/grafana/provisioning/:/etc/grafana/provisioning/
+    depends_on:
+      - "influxdb"
+    restart: always
 
 networks:
   fluent:
     driver: bridge
+
+volumes:
+  influxdb-storage:
+  chronograf-storage:
+  grafana-storage:
