@@ -14,7 +14,7 @@ import time
 import random
 
 BROKER_URL = config("BROKER_URL")
-UPDATE_DATA_TIME = config("UPDATE_DATA_TIME")
+UPDATE_DATA_TIME = config("UPDATE_DATA_TIME", cast=int)
 REMEMBER_ME_SOLARMAN = config("REMEMBER_ME_SOLARMAN")
 
 logging.basicConfig(
