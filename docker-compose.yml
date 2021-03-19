@@ -87,6 +87,12 @@ services:
       - 'env.telegraf'
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /:/hostfs:ro
+      - /etc:/hostfs/etc:ro
+      - /proc:/hostfs/proc:ro
+      - /sys:/hostfs/sys:ro
+      - /var:/hostfs/var:ro
+      - /run:/hostfs/run:ro
     depends_on:
       - "influxdb"
     restart: always
@@ -109,6 +115,21 @@ services:
     depends_on:
       - "influxdb"
     restart: always
+
+  weather: 
+    build: weather
+    env_file: weather/.env
+    restart: unless-stopped
+
+  solarman-mqtt:
+    build: solarman
+    env_file: solarman/.env
+    restart: unless-stopped
+    expose:
+    - 1883
+    ports:
+    - "1883:1883"
+
 
 networks:
   fluent:
