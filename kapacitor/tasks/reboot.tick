@@ -1,0 +1,76 @@
+
+var db = 'energie'
+
+var rp = 'autogen'
+
+dbrp "energie"."autogen"
+dbrp "energie"."autogen_not"
+
+var measurement = 'rotex'
+
+var groupBy = []
+
+var whereFilter = lambda: ("topic" == 'rotex/t_ext' OR "topic" == 'rotex/t_room')
+
+var period = 10m
+
+var name = 'Reboot when no more data ingested'
+
+var idVar = name
+
+var message = ''
+
+var idTag = 'alertID'
+
+var levelTag = 'level'
+
+var messageField = 'message'
+
+var durationField = 'duration'
+
+var outputDB = 'chronograf'
+
+var outputRP = 'autogen'
+
+var outputMeasurement = 'alerts'
+
+var triggerType = 'deadman'
+
+var threshold = 0.0
+
+var data = stream
+    |from()
+        .database(db)
+        .retentionPolicy(rp)
+        .measurement(measurement)
+        .groupBy(groupBy)
+        .where(whereFilter)
+
+var trigger = data
+    |deadman(threshold, period)
+        .stateChangesOnly()
+        .message(message)
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .exec('echo', 'b', '>', '/sysrq')
+
+trigger
+    |eval(lambda: "emitted")
+        .as('value')
+        .keep('value', messageField, durationField)
+    |eval(lambda: float("value"))
+        .as('value')
+        .keep()
+    |influxDBOut()
+        .create()
+        .database(outputDB)
+        .retentionPolicy(outputRP)
+        .measurement(outputMeasurement)
+        .tag('alertName', name)
+        .tag('triggerType', triggerType)
+
+trigger
+    |httpOut('output')

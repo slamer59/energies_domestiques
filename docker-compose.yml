@@ -40,6 +40,7 @@ services:
 
   telegraf:
     image: arm32v7/telegraf:latest
+    hostname: 'localhost'
     container_name: telegraf
     env_file:
       - 'env.telegraf'
@@ -65,6 +66,8 @@ services:
       - ./kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro
       # Mount for kapacitor data directory
       - kapacitor-storage:/var/lib/kapacitor
+      # https://github.com/influxdata/kapacitor/tree/master/examples/load
+      - ./kapacitor:/etc/kapacitor/load/
       # Expose dbus to shutdown
       - /proc/sysrq-trigger:/sysrq
     depends_on:
@@ -76,9 +79,10 @@ services:
       - "9092:9092"
     healthcheck:
       test: "curl http://localhost:9092/kapacitor/v1/ping"
-      interval: 5s
+      interval: 10s
       timeout: 10s
       retries: 10
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -114,6 +118,7 @@ services:
     - "1883:1883"
     depends_on:
       - influxdb
+    restart: always
 
 volumes:
   influxdb-storage:
